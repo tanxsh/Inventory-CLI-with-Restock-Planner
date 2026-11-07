@@ -4,7 +4,6 @@ Submitted by: Tanish Jagadheshan
 
 A small command-line tool for tracking a store's products. It runs on Python 3 and uses only the standard library. Products are saved in a local JSON file.
 
-Each run does one thing and exits. It never asks for input.
 
 ## Usage
 
@@ -109,6 +108,3 @@ The tool saves UTF-8 JSON like this:
 - If the file is empty, broken JSON, or doesn't match this layout, the tool reports an error and leaves the file alone.
 - Changes are written to a temporary file first and then swapped in, so a failed write can't damage your data.
 - A failed command never changes the file or uses up an ID.
-
-## License
-MIT
