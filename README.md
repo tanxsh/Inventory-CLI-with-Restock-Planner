@@ -2,7 +2,7 @@
 
 Submitted by: Tanish Jagadheshan
 
-A command-line tool for tracking a store's products. It runs on Python 3 and uses only the standard library. Products are saved in a local JSON file.
+A command-line tool for tracking a store's products. It runs on Python 3 and uses the standard Python library. Products are saved in a local JSON file.
 
 
 ## Usage
