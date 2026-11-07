@@ -32,7 +32,7 @@ Rules for values:
 
 Exit codes: `0` success, `1` product not found or a problem with the data file, `2` bad command or bad value. Errors are printed to stderr.
 
-## Custom feature: `restock`
+## Custom feature: restock
 
 ### Who it helps and why
 A shop owner who wants to know what to order and how much money it will take. You pick the minimum stock you want for every product, and `restock` shows which products are short, how many units to buy, what each costs, and the total. It's more useful than a plain low-stock list because it gives you the budget too.
