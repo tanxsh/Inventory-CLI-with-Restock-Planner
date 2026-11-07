@@ -11,7 +11,7 @@ A small command-line tool for tracking a store's products. It runs on Python 3 a
 python3 products.py [--file PATH] COMMAND [OPTIONS]
 ```
 
-`--file PATH` picks the data file. It has to come before the command. The default is `products.json` in the folder you run the command from. On Windows you can use `py -3` instead of `python3`.
+`--file PATH` picks the data file. It has to come before the command. The default is `products.json` in the folder you run the command from.
 
 | Command | What it does |
 |---|---|
@@ -50,7 +50,7 @@ For every product with a quantity below N:
 - units needed = N minus the current quantity
 - cost = units needed × price
 
-The total is the sum of all the costs. Money is calculated with Python's `Decimal`, so there are no rounding surprises. Products are listed by ID. The command only reads the file, so it never creates or changes it.
+The total is the sum of all the costs. Money is calculated with Python's Decimal, so there are no rounding issues. Products are listed by ID. The command only reads the file, so it never creates or changes it.
 
 ### Output
 A JSON object with the target, the list of products to restock, and the total cost.
@@ -80,7 +80,7 @@ The last command prints this (shown on several lines here; the tool prints it on
 
 Marker has 30, which is above the target, so it isn't listed.
 
-### Edge case: nothing needs restocking
+### Edge case: Nothing needs restocking
 If every product is at or above the target, or the file is empty or doesn't exist yet, you get an empty list and a zero total, with exit code 0:
 
 ```bash
