@@ -150,7 +150,9 @@ def valid_price(text):
         raise argparse.ArgumentTypeError(
             f"invalid price {text!r}: use digits with up to two decimal places, e.g. 4.50"
         )
-    return f"{Decimal(text).quantize(Decimal('0.01'))}"
+    # .2f formatting is exact for Decimal and, unlike quantize, cannot
+    # overflow the decimal context on absurdly long inputs
+    return f"{Decimal(text):.2f}"
 
 
 def whole_number(text, label):
@@ -240,8 +242,95 @@ def check_arguments(args, subparsers):
         subparsers["delete"].error("deletion must be confirmed with --yes")
 
 
-# Commands are added one at a time in the next steps.
-COMMANDS = {}
+# ---------------------------------------------------------------------------
+# Commands. Each handler returns the JSON-serializable result; main() prints
+# it. Mutating handlers save before returning, so a later invocation sees the
+# change and a failed run never reaches save_store.
+# ---------------------------------------------------------------------------
+
+def require_product(products, product_id):
+    for product in products:
+        if product["id"] == product_id:
+            return product
+    raise StoreError(f"product with id {product_id} not found")
+
+
+def sorted_products(products):
+    return sorted(products, key=lambda product: product["id"])
+
+
+def cmd_add(args):
+    store = load_store(args.file)
+    product = {
+        "id": store["next_id"],
+        "name": args.name,
+        "price": args.price,
+        "quantity": args.quantity,
+    }
+    store["products"].append(product)
+    store["next_id"] += 1
+    save_store(args.file, store)
+    return product
+
+
+def cmd_list(args):
+    store = load_store(args.file)
+    return sorted_products(store["products"])
+
+
+def cmd_get(args):
+    store = load_store(args.file)
+    return require_product(store["products"], args.id)
+
+
+def cmd_update(args):
+    store = load_store(args.file)
+    product = require_product(store["products"], args.id)
+    for field in ("name", "price", "quantity"):
+        value = getattr(args, field)
+        if value is not None:
+            product[field] = value
+    save_store(args.file, store)
+    return product
+
+
+def cmd_delete(args):
+    store = load_store(args.file)
+    product = require_product(store["products"], args.id)
+    store["products"].remove(product)
+    save_store(args.file, store)
+    return {"deleted_id": product["id"]}
+
+
+def cmd_restock(args):
+    store = load_store(args.file)
+    items = []
+    total_cost = Decimal("0")
+    for product in sorted_products(store["products"]):
+        if product["quantity"] >= args.target:
+            continue
+        needed = args.target - product["quantity"]
+        cost = Decimal(product["price"]) * needed
+        total_cost += cost
+        items.append({
+            "id": product["id"],
+            "name": product["name"],
+            "price": product["price"],
+            "quantity": product["quantity"],
+            "needed": needed,
+            "cost": f"{cost:.2f}",
+        })
+    return {"target": args.target, "items": items, "total_cost": f"{total_cost:.2f}"}
+
+
+COMMANDS = {
+    "add": cmd_add,
+    "list": cmd_list,
+    "get": cmd_get,
+    "update": cmd_update,
+    "delete": cmd_delete,
+    "restock": cmd_restock,
+}
 
 
 def main(argv=None):
@@ -249,10 +338,7 @@ def main(argv=None):
     args = parser.parse_args(argv)  # --help, syntax errors and bad values end here
     check_arguments(args, subparsers)
 
-    handler = COMMANDS.get(args.command)
-    if handler is None:
-        print(f"error: command '{args.command}' is not implemented yet", file=sys.stderr)
-        return 1
+    handler = COMMANDS[args.command]
     try:
         result = handler(args)
     except StoreError as e:
