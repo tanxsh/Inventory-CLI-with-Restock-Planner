@@ -1,4 +1,4 @@
-# Inventory CLI
+# Inventory CLI with Restock Planner
 
 Submitted by: Tanish Jagadheshan
 
